@@ -98,8 +98,7 @@ public class SellerDAO_JDBC implements SellerDAO {
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
-//			throw new DBException(e.getMessage());
+			throw new DBException(e.getMessage());
 		} finally {
 			DB.closeStatement(st);
 		}
@@ -123,7 +122,6 @@ public class SellerDAO_JDBC implements SellerDAO {
 		} finally {
 			DB.closeStatement(st);
 		}
-
 	}
 
 	@Override
