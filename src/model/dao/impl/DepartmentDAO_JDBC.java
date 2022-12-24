@@ -30,6 +30,12 @@ public class DepartmentDAO_JDBC implements DAO<Department> {
 		// TODO Auto-generated method stub
 
 	}
+	
+	@Override
+	public void deleteById(Integer id) {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
 	public Department findById(Integer id) {
