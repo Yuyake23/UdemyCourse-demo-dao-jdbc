@@ -50,19 +50,10 @@ public class SellerDAO_JDBC implements SellerDAO {
 				ResultSet rs = st.getGeneratedKeys();
 				if (rs.next()) {
 					obj.setId(rs.getInt(1));
+					obj.getDepartment()
+							.setName(new DepartmentDAO_JDBC(conn).findById(obj.getDepartment().getId()).getName());
 				}
 				DB.closeResultSet(rs);
-				{
-					Statement st1 = conn.createStatement();
-					ResultSet rs1 = st1.executeQuery("""
-							SELECT * FROM department
-							WHERE id = %s
-							""".formatted(obj.getDepartment().getId()));
-					rs1.next();
-					obj.getDepartment().setName(rs1.getString("name"));
-					DB.closeResultSet(rs1);
-					DB.closeStatement(st1);
-				}
 			} else {
 				throw new DBException("Unexpected error! No rows affectede!");
 			}
