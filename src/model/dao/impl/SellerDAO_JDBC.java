@@ -55,7 +55,7 @@ public class SellerDAO_JDBC implements SellerDAO {
 				}
 				DB.closeResultSet(rs);
 			} else {
-				throw new DBException("Unexpected error! No rows affectede!");
+				throw new DBException("Unexpected error! No rows affected!");
 			}
 
 		} catch (SQLException e) {
@@ -67,8 +67,42 @@ public class SellerDAO_JDBC implements SellerDAO {
 
 	@Override
 	public void update(Seller obj) {
-		// TODO Auto-generated method stub
+		PreparedStatement st = null;
 
+		try {
+			st = conn.prepareStatement("""
+					UPDATE seller
+					SET name = ?, email = ?, birthDate = ?, baseSalary = ?, departmentId = ?
+					WHERE id = ?;
+					""", Statement.RETURN_GENERATED_KEYS);
+
+			st.setString(1, obj.getName());
+			st.setString(2, obj.getEmail());
+			st.setDate(3, new Date(obj.getBirthDate().getTime()));
+			st.setDouble(4, obj.getBaseSalary());
+			st.setInt(5, obj.getDepartment().getId());
+			st.setInt(6, obj.getId());
+
+			int rowsAffected = st.executeUpdate();
+
+			if (rowsAffected > 0) {
+				ResultSet rs = st.getGeneratedKeys();
+				if (rs.next()) {
+					obj.setId(rs.getInt(1));
+					obj.getDepartment()
+							.setName(new DepartmentDAO_JDBC(conn).findById(obj.getDepartment().getId()).getName());
+				}
+				DB.closeResultSet(rs);
+			} else {
+				throw new DBException("Unexpected error! No rows affected!");
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+//			throw new DBException(e.getMessage());
+		} finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override
@@ -97,22 +131,6 @@ public class SellerDAO_JDBC implements SellerDAO {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
-	}
-
-	private Seller instanciateSeller(ResultSet rs, Department department) throws SQLException {
-		Seller seller = new Seller();
-
-		seller.setId(rs.getInt("id"));
-		seller.setName(rs.getString("name"));
-		seller.setEmail(rs.getString("email"));
-		seller.setBaseSalary(rs.getDouble("baseSalary"));
-		seller.setBirthDate(rs.getDate("birthDate"));
-		seller.setDepartment(department);
-		return seller;
-	}
-
-	private Department instanciateDepartment(ResultSet rs) throws SQLException {
-		return new Department(rs.getInt("departmentId"), rs.getString("DepName"));
 	}
 
 	@Override
@@ -208,6 +226,22 @@ public class SellerDAO_JDBC implements SellerDAO {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
+	}
+
+	private static Seller instanciateSeller(ResultSet rs, Department department) throws SQLException {
+		Seller seller = new Seller();
+
+		seller.setId(rs.getInt("id"));
+		seller.setName(rs.getString("name"));
+		seller.setEmail(rs.getString("email"));
+		seller.setBaseSalary(rs.getDouble("baseSalary"));
+		seller.setBirthDate(rs.getDate("birthDate"));
+		seller.setDepartment(department);
+		return seller;
+	}
+
+	private static Department instanciateDepartment(ResultSet rs) throws SQLException {
+		return new Department(rs.getInt("departmentId"), rs.getString("DepName"));
 	}
 
 }
